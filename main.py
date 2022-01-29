@@ -137,9 +137,16 @@ async def main_handler(_, message: Message):
     if ((message.forward_from or message.forward_from_chat) is not None) and ("forward" not in check_data):
         await delete_message(message)
         return
-    if (len(check_data) == 8) or (((message.video is not None) and ("video" in check_data)) or ((message.document is not None) and ("document" in check_data)) or ((message.photo is not None) and ("photo" in check_data)) or ((message.audio is not None) and ("audio" in check_data)) or ((message.text is not None) and ("text" in check_data)) or ((message.sticker is not None) and ("sticker" in check_data)) or ((message.animation is not None) and ("gif" in check_data))):
-        pass
-    else:
+    if (
+        len(check_data) != 8
+        and (message.video is None or "video" not in check_data)
+        and (message.document is None or "document" not in check_data)
+        and (message.photo is None or "photo" not in check_data)
+        and (message.audio is None or "audio" not in check_data)
+        and (message.text is None or "text" not in check_data)
+        and (message.sticker is None or "sticker" not in check_data)
+        and (message.animation is None or "gif" not in check_data)
+    ):
         await delete_message(message)
         return
     if blocked_words is not None:
@@ -193,11 +200,10 @@ async def callback_handlers(bot: Client, cb: CallbackQuery):
             await mongodb.set_blocked_words(id=cb.message.chat.id, blocked_words=None)
             await mongodb.set_blocked_exts(id=cb.message.chat.id, blocked_exts=None)
             await cb.answer("Changed Every Filters to Default!\nAlso Changed Blocked Words & Blocked Extensions to None.", show_alert=True)
+        elif get_cb_data not in data_load:
+            data_load.append(get_cb_data)
         else:
-            if get_cb_data not in data_load:
-                data_load.append(get_cb_data)
-            elif get_cb_data in data_load:
-                data_load.remove(get_cb_data)
+            data_load.remove(get_cb_data)
         await mongodb.set_custom_filters(id=cb.message.chat.id, custom_filters=data_load)
         await setup_callbacks_for_custom_filters(cb)
     elif "allowServiceMessagesDelete" in cb.data:
