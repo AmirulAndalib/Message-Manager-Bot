@@ -41,7 +41,6 @@ async def setup_callbacks_for_custom_filters(cb: CallbackQuery):
         )
     except FloodWait as e:
         await asyncio.sleep(e.x)
-        pass
     except MessageNotModified:
         pass
 
@@ -57,11 +56,10 @@ async def blocked_words_loop(blocked_words, update):
 async def blocked_ext_checker(message: Message, chat_id):
     blocked_exts = await db.get_blocked_exts(chat_id)
     media = message.document or message.video or message.audio or message.sticker
-    if (media is not None) and (media.file_name is not None):
-        _file = media.file_name.rsplit(".", 1)
-        if (len(_file) == 2) and (_file[-1].lower() in blocked_exts):
-            return 400
-        else:
-            return 200
+    if media is None or media.file_name is None:
+        return 200
+    _file = media.file_name.rsplit(".", 1)
+    if (len(_file) == 2) and (_file[-1].lower() in blocked_exts):
+        return 400
     else:
         return 200

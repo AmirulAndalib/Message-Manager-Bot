@@ -26,15 +26,14 @@ class Database:
 
     async def is_chat_exist(self, id):
         chat = await self.col.find_one({'id': int(id)})
-        return True if chat else False
+        return bool(chat)
 
     async def total_chat_count(self):
         count = await self.col.count_documents({})
         return count
 
     async def get_all_chats(self):
-        all_chats = self.col.find({})
-        return all_chats
+        return self.col.find({})
 
     async def delete_chat(self, chat_id):
         await self.col.delete_many({'id': int(chat_id)})
